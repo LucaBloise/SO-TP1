@@ -15,8 +15,6 @@ void createSlaves(int slavesAmount);
 
 void createPipe(*int fds);
 
-void slaveClose(int slaveIndex);
-
 void sendFiles(int filesAmount, int slaveIndex, char* files[]);
 
 void slaveManager(int argc, char* argv[]);

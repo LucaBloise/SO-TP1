@@ -1,10 +1,17 @@
 #include "application.h"
 
 int fds[FDS_ARRAY_SIZE];
+int filesIndex = 1;
 
 int main(int argc, char* argv[]){
 
     createSlaves(SLAVES);
+
+    for(int i = 0; i < SLAVES; i++){
+        sendFiles(INITIAL_LOADOUT, i, argv);
+    }
+
+    
 
 }
 
@@ -36,5 +43,12 @@ void slaveClose(int slaveIndex){
         if(i != (SLAVES - 1)*slaveIndex + 1 && i != (SLAVES - 1)*slaveIndex + 3){
             close(fds[i]);
         }
+    }
+}
+
+void sendFiles(int filesAmount, int slaveIndex, char* files[]){
+    for(int i = 0; i < filesAmount && files != NULL; i++){
+        string path = files[filesIndex++];
+        write(fds[slaveIndex + 2], path, strlen(path));
     }
 }

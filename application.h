@@ -21,4 +21,6 @@ void sendFiles(int filesAmount, int slaveIndex, char* files[]);
 
 void slaveManager(int argc, char* argv[]);
 
+void closeAll();
+
 #endif

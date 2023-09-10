@@ -14,6 +14,7 @@ int main(int argc, char* argv[]){
     }
 
     slaveManager(argc, argv);
+    closeAll();
 
 }
 
@@ -84,4 +85,10 @@ void slaveManager(int argc, char* argv[]){
     }
 
     fclose(resultsFile);
+}
+
+void closeAll(){
+    for(int i = 0; i < FDS_ARRAY_SIZE; i++){
+        close(fds[i]);
+    }
 }

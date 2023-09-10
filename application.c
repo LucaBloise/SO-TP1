@@ -2,6 +2,8 @@
 
 int fds[FDS_ARRAY_SIZE];
 int filesIndex = 1;
+int savedFiles = 1;
+int slavesInitialLoadout[SLAVES] = {[0 ... (SLAVES - 1)] = INITIAL_LOADOUT};
 
 int main(int argc, char* argv[]){
 
@@ -11,7 +13,7 @@ int main(int argc, char* argv[]){
         sendFiles(INITIAL_LOADOUT, i, argv);
     }
 
-    
+    slaveManager(argc, argv);
 
 }
 
@@ -47,8 +49,39 @@ void slaveClose(int slaveIndex){
 }
 
 void sendFiles(int filesAmount, int slaveIndex, char* files[]){
-    for(int i = 0; i < filesAmount && files != NULL; i++){
+    for(int i = 0; i < filesAmount && files[filesIndex] != NULL; i++){
         string path = files[filesIndex++];
-        write(fds[slaveIndex + 2], path, strlen(path));
+        write(fds[(SLAVES - 1)*slaveIndex + 2], path, strlen(path));
     }
+}
+
+void slaveManager(int argc, char* argv[]){
+    fd_set* rfds;
+    char* result;
+    File* resultsFile;
+
+    file = fopen("results.txt", "w");
+
+    while(savedFiles < argc){
+        FD_ZERO(rfds);
+        for(int i = 0; i < SLAVES; i++){
+            FD_SET(fds[(SLAVES - 1)*i], rfds);
+        }
+        select(fds[(SLAVES-1)^2], rfds, NULL, NULL, NULL);
+        for(int i = 0; i < SLAVES; i++){
+            if(FD_ISSET(fds[(SLAVES - 1)*i], rfds)){
+                if(slavesInitialLoadout[i] > 1){
+                    slavesInitialLoadout[i]--;
+                } 
+                else {
+                    sendFiles(1, i, argv);
+                }
+                read(fds[(SLAVES - 1)*i], result, RESULT_SIZE);
+                fprintf(resultsFile, "%s\n", result);
+                savedFiles++;
+            }
+        }
+    }
+
+    fclose(resultsFile);
 }

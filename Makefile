@@ -1,6 +1,9 @@
 APPLICATION=application
 SOURCES_APPLICATION=application.c
 
+SLAVE=slave
+SOURCES_SLAVE=slave.c
+
 GCC=gcc
 FLAGS=-Wall
 
@@ -8,3 +11,11 @@ all: $(APPLICATION)
 
 $(APPLICATION): $(SOURCES_APPLICATION)
 	$(GCC) $(SOURCES_APPLICATION) -o $(APPLICATION) $(FLAGS)
+
+$(SLAVE): $(SOURCES_SLAVE)
+	$(GCC) $(SOURCES_SLAVE) -o $(SLAVE) $(FLAGS)
+
+clean:
+	rm -rf $(APPLICATION) $(SLAVE)
+
+.PHONY all clean

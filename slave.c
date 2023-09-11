@@ -10,7 +10,7 @@ int main(){
         sprintf(command, "md5sum %s", path);
         pipeRead = popen(command, "r");
         fread(md5, MD5_SIZE, 1, pipeRead);
-        sprintf(result, "%s - %s - %d", path, md5, getpid());
+        sprintf(result, "%s - %s - %d\n", path, md5, getpid());
         write(1, result, strlen(result));
         pclose(pipeRead);
     }

@@ -51,20 +51,20 @@ void sendFiles(int filesAmount, int slaveIndex, char* files[]){
 }
 
 void slaveManager(int argc, char* argv[]){
-    fd_set* rfds;
+    fd_set rfds;
     char result[RESULT_SIZE];
     FILE* resultsFile;
 
     resultsFile = fopen("results.txt", "w");
 
     while(savedFiles < argc){
-        FD_ZERO(rfds);
+        FD_ZERO(&rfds);
         for(int i = 0; i < SLAVES; i++){
-            FD_SET(fds[(SLAVES - 1)*i], rfds);
+            FD_SET(fds[(SLAVES - 1)*i], &rfds);
         }
-        select(fds[(SLAVES-1)^2], rfds, NULL, NULL, NULL);
+        select(fds[(SLAVES-1)^2] + 1, &rfds, NULL, NULL, NULL);
         for(int i = 0; i < SLAVES; i++){
-            if(FD_ISSET(fds[(SLAVES - 1)*i], rfds)){
+            if(FD_ISSET(fds[(SLAVES - 1)*i], &rfds)){
                 if(slavesInitialLoadout[i] > 1){
                     slavesInitialLoadout[i]--;
                 } 
@@ -72,7 +72,7 @@ void slaveManager(int argc, char* argv[]){
                     sendFiles(1, i, argv);
                 }
                 read(fds[(SLAVES - 1)*i], result, RESULT_SIZE);
-                fprintf(resultsFile, "%s\n", result);
+                fwrite(result, strlen(result), 1, resultsFile);
                 savedFiles++;
             }
         }

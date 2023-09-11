@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
 
 
 void createSlaves(int slavesAmount){
-    for(int i = 0; i < slavesAmount, i++){
+    for(int i = 0; i < slavesAmount; i++){
         createPipe(fds + (SLAVES - 1)*i);
         createPipe(fds + ((SLAVES - 1)*i + 2));
         if(fork() != 0){
@@ -28,15 +28,15 @@ void createSlaves(int slavesAmount){
             close(fds[(SLAVES - 1)*i + 3]);
         }
         else {
-            dup2(fds[(SLAVES - 1)*slaveIndex + 3], 0);
-            dup2(fds[(SLAVES - 1)*slaveIndex + 1], 1);
+            dup2(fds[(SLAVES - 1)*i + 3], 0);
+            dup2(fds[(SLAVES - 1)*i + 1], 1);
             closeAll();
             execve("./slave.c", NULL, NULL);
         }
     }
 }
 
-void createPipe(*int fds){
+void createPipe(int* fds){
     if(pipe(fds) == -1){
         perror("pipe");
         exit(1);
@@ -45,17 +45,17 @@ void createPipe(*int fds){
 
 void sendFiles(int filesAmount, int slaveIndex, char* files[]){
     for(int i = 0; i < filesAmount && files[filesIndex] != NULL; i++){
-        string path = files[filesIndex++];
+        char* path = files[filesIndex++];
         write(fds[(SLAVES - 1)*slaveIndex + 2], path, strlen(path));
     }
 }
 
 void slaveManager(int argc, char* argv[]){
     fd_set* rfds;
-    char* result;
-    File* resultsFile;
+    char result[RESULT_SIZE];
+    FILE* resultsFile;
 
-    file = fopen("results.txt", "w");
+    resultsFile = fopen("results.txt", "w");
 
     while(savedFiles < argc){
         FD_ZERO(rfds);

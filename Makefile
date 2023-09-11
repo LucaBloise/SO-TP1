@@ -7,7 +7,7 @@ SOURCES_SLAVE=slave.c
 GCC=gcc
 FLAGS=-Wall
 
-all: $(APPLICATION)
+all: $(APPLICATION) $(SLAVE)
 
 $(APPLICATION): $(SOURCES_APPLICATION)
 	$(GCC) $(SOURCES_APPLICATION) -o $(APPLICATION) $(FLAGS)
@@ -16,6 +16,6 @@ $(SLAVE): $(SOURCES_SLAVE)
 	$(GCC) $(SOURCES_SLAVE) -o $(SLAVE) $(FLAGS)
 
 clean:
-	rm -rf $(APPLICATION) $(SLAVE)
+	rm -rf $(APPLICATION) $(SLAVE) results.txt
 
-.PHONY all clean
+.PHONY: all clean

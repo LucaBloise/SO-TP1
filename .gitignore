@@ -2,3 +2,8 @@
 .bashrc
 .vscode/settings.json
 .lesshst
+fileGenerator.sh
+application
+slave
+files/
+results.txt

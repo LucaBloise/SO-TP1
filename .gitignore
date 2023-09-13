@@ -7,3 +7,4 @@ application
 slave
 files/
 results.txt
+.vscode/launch.json

@@ -10,7 +10,7 @@
 #define SLAVES 5
 #define INITIAL_LOADOUT 5
 #define FDS_ARRAY_SIZE (4*SLAVES)
-#define RESULT_SIZE 1048
+#define RESULT_SIZE 40
 
 void createSlaves(int slavesAmount);
 

@@ -5,7 +5,7 @@ SLAVE=slave
 SOURCES_SLAVE=slave.c
 
 GCC=gcc
-FLAGS=-Wall
+FLAGS=-Wall -g
 
 all: $(APPLICATION) $(SLAVE)
 

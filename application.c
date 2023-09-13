@@ -14,12 +14,14 @@ int main(int argc, char* argv[]){
     }
 
     slaveManager(argc, argv);
+    
     closeAll();
 
 }
 
 
 void createSlaves(int slavesAmount){
+    char *args[] = {"./slave.c", NULL};
     for(int i = 0; i < slavesAmount; i++){
         createPipe(fds + (SLAVES - 1)*i);
         createPipe(fds + ((SLAVES - 1)*i + 2));
@@ -31,7 +33,7 @@ void createSlaves(int slavesAmount){
             dup2(fds[(SLAVES - 1)*i + 3], 0);
             dup2(fds[(SLAVES - 1)*i + 1], 1);
             closeAll();
-            execve("./slave.c", NULL, NULL);
+            execve("./slave.c", args, NULL);
         }
     }
 }
@@ -62,7 +64,7 @@ void slaveManager(int argc, char* argv[]){
         for(int i = 0; i < SLAVES; i++){
             FD_SET(fds[(SLAVES - 1)*i], &rfds);
         }
-        select(fds[(SLAVES-1)^2] + 1, &rfds, NULL, NULL, NULL);
+        select(fds[4*SLAVES - 1] + 1, &rfds, NULL, NULL, NULL);
         for(int i = 0; i < SLAVES; i++){
             if(FD_ISSET(fds[(SLAVES - 1)*i], &rfds)){
                 if(slavesInitialLoadout[i] > 1){
@@ -71,8 +73,8 @@ void slaveManager(int argc, char* argv[]){
                 else {
                     sendFiles(1, i, argv);
                 }
-                read(fds[(SLAVES - 1)*i], result, RESULT_SIZE);
-                fwrite(result, strlen(result), 1, resultsFile);
+                read(fds[(SLAVES - 1)*i], result, RESULT_SIZE); //Por alguna razon no lee nada.
+                fprintf(resultsFile, "%s", result);
                 savedFiles++;
             }
         }

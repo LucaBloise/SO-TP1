@@ -6,6 +6,7 @@ int main(){
     char command[2*PATH_SIZE];
     char md5[MD5_SIZE];
     char result[RESULT_SIZE];
+    
     while(read(0, path, PATH_SIZE) > 0){
         sprintf(command, "md5sum %s", path);
         pipeRead = popen(command, "r");

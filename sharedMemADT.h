@@ -11,10 +11,7 @@
 #include <sys/types.h>
 #include <semaphore.h>
 
-#define MAX_NAME_LENGTH 10
-
 struct sharedMem{
-    char name[MAX_NAME_LENGTH];
     int fd;
     int size;
     void * startAddress;

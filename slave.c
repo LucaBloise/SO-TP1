@@ -30,5 +30,5 @@ void printMD5(const char path[]){
     }
     fgets(md5, MD5_LENGTH+1, md5Pipe);
     pclose(md5Pipe);
-    printf("PATH: %s MD5: %s\n", path, md5); //TODO: en el informe, decir que se asume que ningun path tiene el caracter '\n'
+    printf("PID: %d PATH: %s MD5: %s\n",getpid(), path, md5); //TODO: en el informe, decir que se asume que ningun path tiene el caracter '\n'
 }

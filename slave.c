@@ -6,11 +6,10 @@ int main(){
     char * path;
     while((readCount = read(0, buffer, PIPE_CAP)) > 0){
         buffer[readCount]=0;
-        path = strtok(buffer," ");
+        path = strtok(buffer,"\n");
         while (path != NULL){
-            printf("TOKEN: %s\n", path);
             printMD5(path);
-            path = strtok(NULL, " ");
+            path = strtok(NULL, "\n");
         }
 
     }

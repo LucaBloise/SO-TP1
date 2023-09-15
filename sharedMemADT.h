@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <semaphore.h>
 
-struct sharedMem{
+struct shm{
     int fd;
     int size;
     void * startAddress;
@@ -20,15 +20,14 @@ struct sharedMem{
     int writeOffset;
 };
 
-typedef struct sharedMem * sharedMem;
+typedef struct shm * sharedMem;
 
 sharedMem createSharedMem(char * name, int size);
-sharedMem connectToSharedMem(char * name, int size);
 
 void closeSharedMem(sharedMem shm);
 void unlinkSharedMem(char name[]);
 
-char * readSharedMem(sharedMem shm);
+int readSharedMem(sharedMem shm, char * buf);
 void writeSharedMem(sharedMem shm, char * string, int n);
 
 void semaphoreUp(sharedMem shm);

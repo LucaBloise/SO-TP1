@@ -1,18 +1,35 @@
 #include "slave.h"
 
 int main(){
-    FILE* pipeRead;
-    char path[PATH_SIZE];
-    char command[2*PATH_SIZE];
-    char md5[MD5_SIZE];
-    char result[RESULT_SIZE];
-    
-    while(read(0, path, PATH_SIZE) > 0){
-        sprintf(command, "md5sum %s", path);
-        pipeRead = popen(command, "r");
-        fread(md5, MD5_SIZE, 1, pipeRead);
-        sprintf(result, "%s - %s - %d\n", path, md5, getpid());
-        write(1, result, strlen(result));
-        pclose(pipeRead);
+    char buffer[PIPE_CAP];
+    int readCount;
+    char * path;
+    while((readCount = read(0, buffer, PIPE_CAP)) > 0){
+        buffer[readCount]=0;
+        path = strtok(buffer," ");
+        while (path != NULL){
+            printf("TOKEN: %s\n", path);
+            printMD5(path);
+            path = strtok(NULL, " ");
+        }
+
     }
+    if (readCount == -1){
+        perror("Read");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void printMD5(const char path[]){
+    char md5[MD5_LENGTH+1];
+    char command[8 + MAX_PATH_LENGTH];
+    sprintf(command ,"md5sum %256s" ,path); //TODO: acordarse de poner en el informe que el maximo path aceptable es de 256
+    FILE * md5Pipe = popen(command, "r");
+    if (md5Pipe==NULL){
+        perror("Pipe");
+        exit(EXIT_FAILURE);
+    }
+    fgets(md5, MD5_LENGTH+1, md5Pipe);
+    pclose(md5Pipe);
+    printf("PATH: %s MD5: %s\n", path, md5); //TODO: en el informe, decir que se asume que ningun path tiene el caracter '\n'
 }

@@ -2,12 +2,15 @@
 #define SLAVE_H
 
 #include <stdio.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define PATH_SIZE 20
-#define MD5_SIZE 16
-#define RESULT_SIZE 40
+#define PIPE_CAP 4096
+#define MAX_PATH_LENGTH 256
+#define MD5_LENGTH 32
 
+void printMD5(const char path[]);
 
 #endif

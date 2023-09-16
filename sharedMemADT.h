@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <semaphore.h>
+#include "commons.h"
 
 struct shm{
     int fd;

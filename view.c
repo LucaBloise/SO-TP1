@@ -7,8 +7,7 @@ int main(int argc, char ** argv){
         char shmBuffer[BUFFER_SIZE];
         int readCount;
         if (( readCount = read(STDIN_FILENO, shmBuffer, BUFFER_SIZE))==-1){
-            perror("Read");
-            exit(EXIT_FAILURE);
+            PERROR_EXIT("Read");
         }
         shmBuffer[readCount] = 0;
         fileCount = atoi(shmBuffer);

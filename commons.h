@@ -12,4 +12,8 @@
 #define SIZE_PER_FILE MAX_PATH_LENGTH+MD5_LENGTH+MAX_PID_LENGTH+FORMAT_LENGTH
 #define SHM_NAME "myShm"
 
+#include <stdio.h>
+#include <stdlib.h>
+#define PERROR_EXIT(message) {perror(message); exit(EXIT_FAILURE);};
+
 #endif

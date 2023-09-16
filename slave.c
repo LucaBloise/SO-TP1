@@ -1,10 +1,8 @@
 #include "slave.h"
 
 int main(){
-
     if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
-        perror("Setvbuf");
-        exit(EXIT_FAILURE);
+        PERROR_EXIT("Setvbuf");
     }
 
     char buffer[PIPE_CAP];
@@ -33,8 +31,7 @@ int main(){
 
     }
     if (readCount == -1){
-        perror("Read");
-        exit(EXIT_FAILURE);
+        PERROR_EXIT("Read");
     }
 
     return 0;
@@ -46,8 +43,7 @@ void printMD5(const char path[]){
     sprintf(command ,"md5sum %s" ,path);
     FILE * md5Pipe = popen(command, "r");
     if (md5Pipe==NULL){
-        perror("Pipe");
-        exit(EXIT_FAILURE);
+        PERROR_EXIT("Pipe");
     }
     fgets(md5, MD5_LENGTH+1, md5Pipe);
     pclose(md5Pipe);

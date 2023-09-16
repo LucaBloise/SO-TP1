@@ -10,8 +10,7 @@ int main(int argc, char *argv[]){
     }
 
     if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
-        perror("Setvbuf");
-        exit(EXIT_FAILURE);
+        PERROR_EXIT("Setvbuf");
     }
 
     FILE * results = fopen("results.txt", "w");
@@ -34,14 +33,12 @@ void startSlaves(slaveInfo slavesInfo[], int slaveCount){
     for(int i = 0; i<slaveCount; i++){
         slavesInfo[i].pendingFileCount=0;
         if (pipe(slavesInfo[i].hearPipe)==-1 || pipe(slavesInfo[i].talkPipe)==-1){
-            perror("Pipe");
-            exit(EXIT_FAILURE);
+            PERROR_EXIT("Pipe");
         }
 
         int pid = fork();
         if (pid<0){
-            perror("Fork");
-            exit(EXIT_FAILURE);
+            PERROR_EXIT("Fork");
         }
         if (pid==0){
 
@@ -57,8 +54,7 @@ void startSlaves(slaveInfo slavesInfo[], int slaveCount){
             close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
 
             execv("slave", argv);
-            perror("Execve");
-            exit(EXIT_FAILURE);
+            PERROR_EXIT("Execve");
         } else {
             close(slavesInfo[i].talkPipe[PIPE_READ_END]);
             close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
@@ -74,8 +70,7 @@ void sendFile(slaveInfo * slave, char * paths[], int *pathOffset){
     }
     toWrite[len] = '\n';
     if ((write(slave->talkPipe[PIPE_WRITE_END], toWrite, len+1))==-1){
-        perror("Write");
-        exit(EXIT_FAILURE);
+        PERROR_EXIT("Write");
     }
     (*pathOffset)++;
     slave->pendingFileCount++;
@@ -111,16 +106,14 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
             }
         }
         if ((availableCount = select(highestFd + 1, &rfds, NULL, NULL, NULL)) == -1){
-            perror("Select");
-            exit(EXIT_FAILURE);
+            PERROR_EXIT("Select");
         }
         for(int i=0; i<slaveCount && availableCount>0; i++){
 
             if (FD_ISSET(slavesInfo[i].hearPipe[PIPE_READ_END],&rfds)){
                 availableCount--;
                 if ((readCount = read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, PIPE_CAP))==-1){
-                    perror("read");
-                    exit(EXIT_FAILURE);
+                    PERROR_EXIT("read");
                 }
                 readBuffer[readCount]=0;
                 for(int j=0; j<readCount;j++){

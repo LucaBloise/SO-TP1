@@ -24,25 +24,6 @@ sharedMem createSharedMem(char * name, int size){
     return shm;
 }
 
-sharedMem joinSharedMem(char * name, int size){
-    sharedMem shm = malloc(sizeof(struct shm));
-    shm->size = size;
-    shm->readOffset = 0;
-    shm->writeOffset = 0;
-    if ((shm->fd = shm_open(name, O_RDONLY, S_IRUSR)) == -1){
-        perror("Shm_open");
-        exit(EXIT_FAILURE);
-    }
-    if ((shm->startAddress = mmap(NULL, size, PROT_READ, MAP_SHARED, shm->fd, 0))==MAP_FAILED){
-        perror("Mmap");
-        exit(EXIT_FAILURE);
-    }
-    if ((shm->sem = sem_open(name,0))==SEM_FAILED){
-        perror("Sem_open");
-        exit(EXIT_FAILURE);
-    }
-    return shm;
-}
 
 int readSharedMem(sharedMem shm, char * ptr){
     strcpy(ptr, shm->startAddress + shm->readOffset );

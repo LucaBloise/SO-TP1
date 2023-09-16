@@ -1,21 +1,29 @@
-APPLICATION=application
-SOURCES_APPLICATION=application.c
+CC = gcc
+CFLAGS = -Wall -g -lpthread -lrt
 
-SLAVE=slave
-SOURCES_SLAVE=slave.c
+SRC_APP = application.c sharedMemADT.c
+SRC_SLAVE = slave.c
+SRC_VIEW = view.c sharedMemADT.c
 
-GCC=gcc
-FLAGS=-Wall -g
+OBJ_APP = $(SRC_APP:.c=.o)
+OBJ_SLAVE = $(SRC_SLAVE:.c=.o)
+OBJ_VIEW = $(SRC_VIEW:.c=.o)
 
-all: $(APPLICATION) $(SLAVE)
+all: md5 slave vista
 
-$(APPLICATION): $(SOURCES_APPLICATION)
-	$(GCC) $(SOURCES_APPLICATION) -o $(APPLICATION) $(FLAGS)
+md5: $(OBJ_APP)
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(SLAVE): $(SOURCES_SLAVE)
-	$(GCC) $(SOURCES_SLAVE) -o $(SLAVE) $(FLAGS)
+slave: $(OBJ_SLAVE)
+	$(CC) $(CFLAGS) -o $@ $^
+
+vista: $(OBJ_VIEW)
+	$(CC) $(CFLAGS) -o $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf $(APPLICATION) $(SLAVE) results.txt
+	rm -rf md5 slave vista $(OBJ_APP) $(OBJ_SLAVE) $(OBJ_VIEW)
 
 .PHONY: all clean

@@ -9,6 +9,11 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
+    if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
+        perror("Setvbuf");
+        exit(EXIT_FAILURE);
+    }
+
     FILE * results = fopen("results.txt", "w");
     int fileCount = argc-1;
     printf("%d", fileCount);
@@ -136,7 +141,9 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
 
 void save(char fileInfo[], FILE * results,sharedMem shm){
     fprintf(results, "%s", fileInfo);
+    semaphoreDown(shm);
     writeSharedMem(shm, fileInfo, strlen(fileInfo));
+    semaphoreUp(shm);
 }
 
 void closeAll(slaveInfo slavesInfo[], int slaveCount, FILE * results, sharedMem shm){
@@ -146,5 +153,6 @@ void closeAll(slaveInfo slavesInfo[], int slaveCount, FILE * results, sharedMem 
     }
     fclose(results);
     closeSharedMem(shm);
+    unlinkSharedMem(SHM_NAME);
 }
 

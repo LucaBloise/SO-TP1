@@ -17,7 +17,7 @@ sharedMem createSharedMem(char * name, int size){
         perror("Mmap");
         exit(EXIT_FAILURE);
     }
-    if ((shm->sem = sem_open(name, O_CREAT, S_IRUSR|S_IWUSR, 0))==SEM_FAILED){
+    if ((shm->sem = sem_open(name, O_CREAT, S_IRUSR|S_IWUSR, 1))==SEM_FAILED){
         perror("Sem_open");
         exit(EXIT_FAILURE);
     }
@@ -48,14 +48,6 @@ void closeSharedMem(sharedMem shm) {
 }
 
 void unlinkSharedMem(char name[]){
-    /*if (sem_unlink(name)==-1){
-        perror("Sem_unlink");
-        exit(EXIT_FAILURE);
-    }
-    if (shm_unlink(name)==-1){
-        perror("Shm_unlink");
-        exit(EXIT_FAILURE);
-    }*/
     sem_unlink(name);
     shm_unlink(name);
 }

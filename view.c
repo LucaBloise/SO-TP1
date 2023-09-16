@@ -19,11 +19,11 @@ int main(int argc, char ** argv){
 
     char ptr[fileCount*SIZE_PER_FILE];
     while (fileCount > 0){
-        //semaphoreDown(shm);
+        semaphoreDown(shm);
         int readCount = readSharedMem(shm, ptr);
         ptr[readCount]=0;
         printf("%s", ptr);
-       // semaphoreUp(shm);
+        semaphoreUp(shm);
         for(int i = 0; i<readCount; i++){
             if (ptr[i]=='\n'){
                 fileCount--;
@@ -32,6 +32,5 @@ int main(int argc, char ** argv){
     }
 
     closeSharedMem(shm);
-    unlinkSharedMem(SHM_NAME);
     return 0;
 }

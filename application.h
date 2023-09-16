@@ -1,25 +1,32 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include <unistd.h>
-#include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <stdlib.h>
+#include <sys/wait.h>
+#include <string.h>
 #include <sys/select.h>
+#include "commons.h"
+#include "sharedMemADT.h"
 
-#define SLAVES 5
-#define INITIAL_LOADOUT 5
-#define FDS_ARRAY_SIZE (4*SLAVES)
-#define RESULT_SIZE 40
+#define SLAVE_TO_FILE_RATIO 10
+#define INITIAL_FILES_PER_SLAVE_RATIO 3
+#define PIPE_WRITE_END 1
+#define PIPE_READ_END 0
 
-void createSlaves(int slavesAmount);
+typedef struct{
+    int talkPipe[2];
+    int hearPipe[2];
+    int pendingFileCount;
+}slaveInfo;
 
-void createPipe(int* fds);
-
-void sendFiles(int filesAmount, int slaveIndex, char* files[]);
-
-void slaveManager(int argc, char* argv[]);
-
-void closeAll();
+void startSlaves(slaveInfo slavesInfo[], int slaveCount);
+void sendFile(slaveInfo * slave, char * paths[], int *pathOffset);
+void initialFileSend(slaveInfo slavesInfo[], int slaveCount, char * paths[], int * pathOffset);
+void slaveManager(slaveInfo slavesInfo[], int slaveCount,char * paths[], int fileCount, FILE * results, sharedMem shm);
+void save(char fileInfo[],FILE * results, sharedMem shm);
+void closeAll(slaveInfo slavesInfo[], int slaveCount, FILE * results, sharedMem shm);
 
 #endif

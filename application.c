@@ -1,90 +1,151 @@
 #include "application.h"
 
-int fds[FDS_ARRAY_SIZE];
-int filesIndex = 1;
-int savedFiles = 1;
-int slavesInitialLoadout[SLAVES] = {[0 ... (SLAVES - 1)] = INITIAL_LOADOUT};
+int main(int argc, char *argv[]){
 
-int main(int argc, char* argv[]){
+    unlinkSharedMem(SHM_NAME);
 
-    createSlaves(SLAVES);
-
-    for(int i = 0; i < SLAVES; i++){
-        sendFiles(INITIAL_LOADOUT, i, argv);
+    if (argc < 2){
+        fprintf(stderr, "Not enough arguments\n");
+        exit(EXIT_FAILURE);
     }
 
-    slaveManager(argc, argv);
-    
-    closeAll();
+    //sleep(2);
 
+    FILE * results = fopen("results.txt", "w");
+    int fileCount = argc-1;
+
+    printf("%d", fileCount);
+    sharedMem shm = createSharedMem(SHM_NAME, fileCount*SIZE_PER_FILE);
+
+    int slaveCount = fileCount/SLAVE_TO_FILE_RATIO + 1;
+    slaveInfo slavesInfo[slaveCount];
+    slaveManager(slavesInfo, slaveCount, argv, fileCount, results, shm);
+
+    closeAll(slavesInfo, slaveCount, results, shm);
+    return 0;
 }
 
+void startSlaves(slaveInfo slavesInfo[], int slaveCount){
+    char * argv[] = {"slave", NULL};
 
-void createSlaves(int slavesAmount){
-    char *args[] = {"./slave.c", NULL};
-    for(int i = 0; i < slavesAmount; i++){
-        createPipe(fds + (SLAVES - 1)*i);
-        createPipe(fds + ((SLAVES - 1)*i + 2));
-        if(fork() != 0){
-            close(fds[(SLAVES - 1)*i + 1]);
-            close(fds[(SLAVES - 1)*i + 3]);
+    for(int i = 0; i<slaveCount; i++){
+        slavesInfo[i].pendingFileCount=0;
+        if (pipe(slavesInfo[i].hearPipe)==-1 || pipe(slavesInfo[i].talkPipe)==-1){
+            perror("Pipe");
+            exit(EXIT_FAILURE);
         }
-        else {
-            dup2(fds[(SLAVES - 1)*i + 3], 0);
-            dup2(fds[(SLAVES - 1)*i + 1], 1);
-            closeAll();
-            execve("./slave.c", args, NULL);
+
+        int pid = fork();
+        if (pid<0){
+            perror("Fork");
+            exit(EXIT_FAILURE);
+        }
+        if (pid==0){
+
+            close(slavesInfo[i].hearPipe[PIPE_READ_END]);
+            close(slavesInfo[i].talkPipe[PIPE_WRITE_END]);
+
+            close(STDIN_FILENO);
+            dup(slavesInfo[i].talkPipe[PIPE_READ_END]);
+            close(slavesInfo[i].talkPipe[PIPE_READ_END]);
+
+            close(STDOUT_FILENO);
+            dup(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
+            close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
+
+            execv("slave", argv);
+            perror("Execve");
+            exit(EXIT_FAILURE);
+        } else {
+            close(slavesInfo[i].talkPipe[PIPE_READ_END]);
+            close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
         }
     }
 }
 
-void createPipe(int* fds){
-    if(pipe(fds) == -1){
-        perror("pipe");
-        exit(1);
+void sendFile(slaveInfo * slave, char * paths[], int *pathOffset){
+    int len = strlen(paths[*pathOffset]);
+    char toWrite[len+1];
+    for(int i = 0; i<len; i++){
+        toWrite[i] = paths[*pathOffset][i];
+    }
+    toWrite[len] = '\n';
+    if ((write(slave->talkPipe[PIPE_WRITE_END], toWrite, len+1))==-1){
+        perror("Write");
+        exit(EXIT_FAILURE);
+    }
+    (*pathOffset)++;
+    slave->pendingFileCount++;
+}
+
+void initialFileSend(slaveInfo slavesInfo[], int slaveCount, char * paths[], int * pathOffset){
+    int initialFileCount = slaveCount/INITIAL_FILES_PER_SLAVE_RATIO + 1;
+    for (int i=0; i<slaveCount; i++){
+        for (int j=0; j<initialFileCount; j++){
+            sendFile(&slavesInfo[i], paths, pathOffset);
+
+        }
     }
 }
 
-void sendFiles(int filesAmount, int slaveIndex, char* files[]){
-    for(int i = 0; i < filesAmount && files[filesIndex] != NULL; i++){
-        char* path = files[filesIndex++];
-        write(fds[(SLAVES - 1)*slaveIndex + 2], path, strlen(path));
-    }
-}
-
-void slaveManager(int argc, char* argv[]){
+void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fileCount,FILE * results, sharedMem shm){
+    startSlaves(slavesInfo, slaveCount);
+    int pathOffset = 1;
+    initialFileSend(slavesInfo, slaveCount, paths, &pathOffset);
     fd_set rfds;
-    char result[RESULT_SIZE];
-    FILE* resultsFile;
+    int highestFd = -1;
+    int availableCount;
+    char readBuffer[PIPE_CAP];
+    long readCount;
+    int remainingFiles = fileCount;
 
-    resultsFile = fopen("results.txt", "w");
-
-    while(savedFiles < argc){
+    while(remainingFiles>0) {
         FD_ZERO(&rfds);
-        for(int i = 0; i < SLAVES; i++){
-            FD_SET(fds[(SLAVES - 1)*i], &rfds);
+        for (int i = 0; i < slaveCount; i++) {
+            FD_SET(slavesInfo[i].hearPipe[PIPE_READ_END], &rfds);
+            if (slavesInfo[i].hearPipe[PIPE_READ_END] > highestFd){
+                highestFd = slavesInfo[i].hearPipe[PIPE_READ_END];
+            }
         }
-        select(fds[4*SLAVES - 1] + 1, &rfds, NULL, NULL, NULL);
-        for(int i = 0; i < SLAVES; i++){
-            if(FD_ISSET(fds[(SLAVES - 1)*i], &rfds)){
-                if(slavesInitialLoadout[i] > 1){
-                    slavesInitialLoadout[i]--;
-                } 
-                else {
-                    sendFiles(1, i, argv);
+        if ((availableCount = select(highestFd + 1, &rfds, NULL, NULL, NULL)) == -1){
+            perror("Select");
+            exit(EXIT_FAILURE);
+        }
+        for(int i=0; i<slaveCount && availableCount>0; i++){
+
+            if (FD_ISSET(slavesInfo[i].hearPipe[PIPE_READ_END],&rfds)){
+                availableCount--;
+                if ((readCount = read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, PIPE_CAP))==-1){
+                    perror("read");
+                    exit(EXIT_FAILURE);
                 }
-                read(fds[(SLAVES - 1)*i], result, RESULT_SIZE); //Por alguna razon no lee nada.
-                fprintf(resultsFile, "%s", result);
-                savedFiles++;
+                readBuffer[readCount]=0;
+                for(int j=0; j<readCount;j++){
+                    if (readBuffer[j]=='\n') {
+                        slavesInfo[i].pendingFileCount--;
+                        remainingFiles--;
+                        save(readBuffer, results, shm);
+                    }
+                }
+                if (slavesInfo[i].pendingFileCount==0 && pathOffset<=fileCount){
+                    sendFile(&slavesInfo[i], paths, &pathOffset);
+                }
+
             }
         }
     }
-
-    fclose(resultsFile);
 }
 
-void closeAll(){
-    for(int i = 0; i < FDS_ARRAY_SIZE; i++){
-        close(fds[i]);
+void save(char fileInfo[], FILE * results,sharedMem shm){
+    fprintf(results, "%s", fileInfo);
+}
+
+void closeAll(slaveInfo slavesInfo[], int slaveCount, FILE * results, sharedMem shm){
+    for(int i = 0; i< slaveCount; i++){
+        close(slavesInfo[i].hearPipe[PIPE_READ_END]);
+        close(slavesInfo[i].talkPipe[PIPE_WRITE_END]);
     }
+    fclose(results);
+    closeSharedMem(shm);
 }
+

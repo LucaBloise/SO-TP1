@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "slave.h"
 
 int main(){
@@ -5,7 +7,7 @@ int main(){
         PERROR_EXIT("Setvbuf");
     }
 
-    char buffer[PIPE_CAP];
+    char buffer[PIPE_CAP+1];
     int readCount;
     char path[MAX_PATH_LENGTH];
     while((readCount = read(0, buffer, PIPE_CAP)) > 0){
@@ -14,13 +16,17 @@ int main(){
         int j=0;
         for(int i = 0; buffer[i] && j<MAX_PATH_LENGTH; i++){
             if (buffer[i]=='\n'){
-                path[j++]=0;
+                path[j]=0;
                 printMD5(path);
                 j=0;
             } else {
                 if (buffer[i] == ' ') {
                     path[j++] = '\\';
+                    if (j==MAX_PATH_LENGTH){
+                        break;
+                    }
                 }
+
                 path[j++] = buffer[i];
             }
         }

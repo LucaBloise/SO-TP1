@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "application.h"
 
 int main(int argc, char *argv[]){
@@ -93,7 +95,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
     fd_set rfds;
     int highestFd = -1;
     int availableCount;
-    char readBuffer[PIPE_CAP];
+    char readBuffer[PIPE_CAP+1];
     long readCount;
     int remainingFiles = fileCount;
 

@@ -1,7 +1,12 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "sharedMemADT.h"
 
 sharedMem createSharedMem(char * name, int size){
     sharedMem shm = malloc(sizeof(struct shm));
+    if (shm==NULL){
+        PERROR_EXIT("Malloc");
+    }
     shm->size = size;
     shm->readOffset = 0;
     shm->writeOffset = 0;

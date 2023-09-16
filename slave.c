@@ -10,7 +10,7 @@ int main(){
     char buffer[PIPE_CAP];
     int readCount;
     char * path;
-    while((readCount = read(0, buffer, PIPE_CAP)) > 0){ //el ciclo dura hasta recibir EOF
+    while((readCount = read(0, buffer, PIPE_CAP)) > 0){
         buffer[readCount]=0;
         path = strtok(buffer,"\n");
         while (path != NULL){

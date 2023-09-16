@@ -52,7 +52,7 @@ void unlinkSharedMem(char name[]){
     shm_unlink(name);
 }
 
-void semaphoreUp(sharedMem shm){//TODO: account for >1
+void semaphoreUp(sharedMem shm){
     if (sem_post(shm->sem)==-1){
         perror("Sem_post");
         exit(EXIT_FAILURE);

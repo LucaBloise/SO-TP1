@@ -24,9 +24,28 @@ sharedMem createSharedMem(char * name, int size){
     return shm;
 }
 
+sharedMem joinSharedMem(char * name, int size){
+    sharedMem shm = malloc(sizeof(struct shm));
+    shm->size = size;
+    shm->readOffset = 0;
+    shm->writeOffset = 0;
+    if ((shm->fd = shm_open(name, O_RDONLY, S_IRUSR)) == -1){
+        perror("Shm_open");
+        exit(EXIT_FAILURE);
+    }
+    if ((shm->startAddress = mmap(NULL, size, PROT_READ, MAP_SHARED, shm->fd, 0))==MAP_FAILED){
+        perror("Mmap");
+        exit(EXIT_FAILURE);
+    }
+    if ((shm->sem = sem_open(name,0))==SEM_FAILED){
+        perror("Sem_open");
+        exit(EXIT_FAILURE);
+    }
+    return shm;
+}
 
 int readSharedMem(sharedMem shm, char * ptr){
-    ptr = shm->startAddress + shm->readOffset;
+    strcpy(ptr, shm->startAddress + shm->readOffset );
     int readCount = strlen(ptr);
     shm->readOffset += readCount;
     return readCount;
@@ -48,17 +67,19 @@ void closeSharedMem(sharedMem shm) {
 }
 
 void unlinkSharedMem(char name[]){
-    if (sem_unlink(name)==-1){
+    /*if (sem_unlink(name)==-1){
         perror("Sem_unlink");
         exit(EXIT_FAILURE);
     }
     if (shm_unlink(name)==-1){
         perror("Shm_unlink");
         exit(EXIT_FAILURE);
-    }
+    }*/
+    sem_unlink(name);
+    shm_unlink(name);
 }
 
-void semaphoreUp(sharedMem shm){
+void semaphoreUp(sharedMem shm){//TODO: account for >1
     if (sem_post(shm->sem)==-1){
         perror("Sem_post");
         exit(EXIT_FAILURE);

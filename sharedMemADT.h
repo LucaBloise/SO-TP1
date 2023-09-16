@@ -23,6 +23,7 @@ struct shm{
 typedef struct shm * sharedMem;
 
 sharedMem createSharedMem(char * name, int size);
+sharedMem joinSharedMem(char * name, int size);
 
 void closeSharedMem(sharedMem shm);
 void unlinkSharedMem(char name[]);

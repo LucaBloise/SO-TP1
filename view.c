@@ -1,6 +1,15 @@
 #include "view.h"
-
+#include <sys/wait.h>
 int main(int argc, char ** argv){
+    /*if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
+        perror("Setvbuf");
+        exit(EXIT_FAILURE);
+    }
+    if (setvbuf(stderr, NULL, _IONBF, 0)!=0){
+        perror("Setvbuf");
+        exit(EXIT_FAILURE);
+    }*/
+    //unlinkSharedMem(SHM_NAME);
     int fileCount;
     if (argc == 1){
         char shmBuffer[BUFFER_SIZE];
@@ -16,15 +25,21 @@ int main(int argc, char ** argv){
     }
     sharedMem shm = createSharedMem(SHM_NAME, fileCount * SIZE_PER_FILE);
 
-    char * ptr = NULL;
-    while (fileCount > 0){
-        semaphoreDown(shm);
+    char ptr[fileCount*SIZE_PER_FILE];
+    while (fileCount > 0){ //TODO ver el codigo de esto
+        //semaphoreDown(shm);
         int readCount = readSharedMem(shm, ptr);
+        ptr[readCount]=0;
         printf("%s", ptr);
-        semaphoreUp(shm);
-        fileCount -= readCount/SIZE_PER_FILE;
+       // semaphoreUp(shm);
+        for(int i = 0; i<readCount; i++){
+            if (ptr[i]=='\n'){
+                fileCount--;
+            }
+        }
     }
 
     closeSharedMem(shm);
+
     return 0;
 }

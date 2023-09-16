@@ -9,12 +9,10 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    //sleep(2);
-
     FILE * results = fopen("results.txt", "w");
     int fileCount = argc-1;
-
     printf("%d", fileCount);
+    sleep(2);
     sharedMem shm = createSharedMem(SHM_NAME, fileCount*SIZE_PER_FILE);
 
     int slaveCount = fileCount/SLAVE_TO_FILE_RATIO + 1;
@@ -138,6 +136,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
 
 void save(char fileInfo[], FILE * results,sharedMem shm){
     fprintf(results, "%s", fileInfo);
+    writeSharedMem(shm, fileInfo, strlen(fileInfo));
 }
 
 void closeAll(slaveInfo slavesInfo[], int slaveCount, FILE * results, sharedMem shm){

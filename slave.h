@@ -8,6 +8,7 @@
 #include <string.h>
 #include "commons.h"
 
+#define CMD_NAME "md5sum "
 
 void printMD5(const char path[]);
 

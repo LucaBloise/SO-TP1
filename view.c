@@ -22,9 +22,9 @@ int main(int argc, char ** argv){
     while (fileCount > 0){
         semaphoreDown(shm);
         int readCount = readSharedMem(shm, ptr);
+        semaphoreUp(shm);
         ptr[readCount]=0;
         printf("%s", ptr);
-        semaphoreUp(shm);
         for(int i = 0; i<readCount; i++){
             if (ptr[i]=='\n'){
                 fileCount--;

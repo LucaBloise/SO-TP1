@@ -137,7 +137,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
 void save(char fileInfo[], FILE * results,sharedMem shm){
     fprintf(results, "%s", fileInfo);
     semaphoreDown(shm);
-    writeSharedMem(shm, fileInfo, strlen(fileInfo));
+    writeSharedMem(shm, fileInfo);
     semaphoreUp(shm);
 }
 

@@ -30,7 +30,7 @@ void closeSharedMem(sharedMem shm);
 void unlinkSharedMem(char name[]);
 
 int readSharedMem(sharedMem shm, char * buf);
-void writeSharedMem(sharedMem shm, char * string, int n);
+void writeSharedMem(sharedMem shm, char * string);
 
 void semaphoreUp(sharedMem shm);
 void semaphoreDown(sharedMem shm);

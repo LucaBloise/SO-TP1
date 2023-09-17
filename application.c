@@ -96,7 +96,6 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
     int highestFd = -1;
     int availableCount;
     char readBuffer[SIZE_PER_FILE];
-    long readCount;
     int remainingFiles = fileCount;
 
     while(remainingFiles>0) {
@@ -110,22 +109,17 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
         if ((availableCount = select(highestFd + 1, &rfds, NULL, NULL, NULL)) == -1){
             PERROR_EXIT("Select");
         }
-        for(int i=0; i<slaveCount && availableCount>0; i++){
+        for(int i=0; availableCount>0; i++){
 
             if (FD_ISSET(slavesInfo[i].hearPipe[PIPE_READ_END],&rfds)){
                 availableCount--;
                 memset(readBuffer, 0, SIZE_PER_FILE);
-                if ((readCount = read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, SIZE_PER_FILE))==-1){
+                if (read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, SIZE_PER_FILE)==-1){
                     PERROR_EXIT("read");
                 }
-                //readBuffer[readCount]=0;
-                for(int j=0; j<readCount;j++){
-                    if (readBuffer[j]=='\n') {
-                        slavesInfo[i].pendingFileCount--;
-                        remainingFiles--;
-                        save(readBuffer, results, shm);
-                    }
-                }
+                save(readBuffer, results, shm);
+                slavesInfo[i].pendingFileCount--;
+                remainingFiles--;
                 if (slavesInfo[i].pendingFileCount==0 && pathOffset<=fileCount){
                     sendFile(&slavesInfo[i], paths, &pathOffset);
                 }

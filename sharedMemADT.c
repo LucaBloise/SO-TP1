@@ -33,8 +33,9 @@ int readSharedMem(sharedMem shm, char * ptr){
     return readCount;
 }
 
-void writeSharedMem(sharedMem shm, char * string, int n){
-    memcpy(shm->startAddress + shm->writeOffset, string, n);
+void writeSharedMem(sharedMem shm, char * string){
+    int n = strlen(string);
+    memcpy(shm->startAddress+shm->writeOffset, string, n+1);
     shm->writeOffset += n;
 }
 

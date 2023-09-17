@@ -53,5 +53,21 @@ void printMD5(const char path[]){
     }
     fgets(md5, MD5_LENGTH+1, md5Pipe);
     pclose(md5Pipe);
-    printf("PID: %d PATH: %s MD5: %s\n",getpid(), path, md5);
+    int pid = getpid();
+    while (digits(pid) > MAX_PID_LENGTH){
+        pid /= 10;
+    }
+    printf("PID: %d PATH: %s MD5: %s\n",pid, path, md5);
+}
+
+int digits(int n){
+    if (n==0){
+        return 1;
+    }
+    int count = 0;
+    while (n != 0) {
+        n /= 10;
+        ++count;
+    }
+    return count;
 }

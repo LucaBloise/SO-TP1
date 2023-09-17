@@ -19,24 +19,21 @@ sharedMem createSharedMem(char * name, int size){
     if ((shm->startAddress = mmap(NULL, shm->size, PROT_WRITE | PROT_READ, MAP_SHARED, shm->fd, 0))==MAP_FAILED){
         PERROR_EXIT("Mmap");
     }
-    if ((shm->sem = sem_open(name, O_CREAT, S_IRUSR|S_IWUSR, 1))==SEM_FAILED){
+    if ((shm->sem = sem_open(name, O_CREAT, S_IRUSR|S_IWUSR, 0))==SEM_FAILED){
         PERROR_EXIT("Sem_open");
     }
     return shm;
 }
 
 
-int readSharedMem(sharedMem shm, char * ptr){
-    strcpy(ptr, shm->startAddress + shm->readOffset );
-    int readCount = strlen(ptr);
-    shm->readOffset += readCount;
-    return readCount;
+void readSharedMem(sharedMem shm, void * ptr, int n){
+   memcpy(ptr, shm->startAddress+shm->readOffset, n);
+   shm->readOffset += n;
 }
 
-void writeSharedMem(sharedMem shm, char * string){
-    int n = strlen(string);
-    memcpy(shm->startAddress+shm->writeOffset, string, n+1);
-    shm->writeOffset += n;
+void writeSharedMem(sharedMem shm, void * ptr, int n){
+   memcpy(shm->startAddress+shm->writeOffset, ptr , n);
+   shm->writeOffset += n;
 }
 
 void closeSharedMem(sharedMem shm) {

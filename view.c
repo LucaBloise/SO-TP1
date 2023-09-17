@@ -18,18 +18,12 @@ int main(int argc, char ** argv){
     }
     sharedMem shm = createSharedMem(SHM_NAME, fileCount * SIZE_PER_FILE);
 
-    char ptr[fileCount*SIZE_PER_FILE];
+    char ptr[SIZE_PER_FILE];
     while (fileCount > 0){
         semaphoreDown(shm);
-        int readCount = readSharedMem(shm, ptr);
-        semaphoreUp(shm);
-        ptr[readCount]=0;
-        printf("%s", ptr);
-        for(int i = 0; i<readCount; i++){
-            if (ptr[i]=='\n'){
-                fileCount--;
-            }
-        }
+        readSharedMem(shm, ptr, SIZE_PER_FILE);
+        write(STDOUT_FILENO, ptr, SIZE_PER_FILE);
+        fileCount--;
     }
 
     closeSharedMem(shm);

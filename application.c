@@ -95,7 +95,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
     fd_set rfds;
     int highestFd = -1;
     int availableCount;
-    char readBuffer[PIPE_CAP+1];
+    char readBuffer[SIZE_PER_FILE];
     long readCount;
     int remainingFiles = fileCount;
 
@@ -114,10 +114,11 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
 
             if (FD_ISSET(slavesInfo[i].hearPipe[PIPE_READ_END],&rfds)){
                 availableCount--;
-                if ((readCount = read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, PIPE_CAP))==-1){
+                memset(readBuffer, 0, SIZE_PER_FILE);
+                if ((readCount = read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, SIZE_PER_FILE))==-1){
                     PERROR_EXIT("read");
                 }
-                readBuffer[readCount]=0;
+                //readBuffer[readCount]=0;
                 for(int j=0; j<readCount;j++){
                     if (readBuffer[j]=='\n') {
                         slavesInfo[i].pendingFileCount--;
@@ -136,8 +137,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
 
 void save(char fileInfo[], FILE * results,sharedMem shm){
     fprintf(results, "%s", fileInfo);
-    semaphoreDown(shm);
-    writeSharedMem(shm, fileInfo);
+    writeSharedMem(shm, fileInfo, SIZE_PER_FILE);
     semaphoreUp(shm);
 }
 

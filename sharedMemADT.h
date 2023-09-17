@@ -29,8 +29,8 @@ sharedMem joinSharedMem(char * name, int size);
 void closeSharedMem(sharedMem shm);
 void unlinkSharedMem(char name[]);
 
-int readSharedMem(sharedMem shm, char * buf);
-void writeSharedMem(sharedMem shm, char * string);
+void readSharedMem(sharedMem shm, void * ptr, int n);
+void writeSharedMem(sharedMem shm, void * ptr, int n);
 
 void semaphoreUp(sharedMem shm);
 void semaphoreDown(sharedMem shm);

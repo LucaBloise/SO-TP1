@@ -9,7 +9,7 @@
 #include <string.h>
 #include "commons.h"
 
-#define CMD_NAME "md5sum "
+#define MD5SUM_PATH "/usr/bin/md5sum"
 
 void printMD5(char path[]);
 int digits(int n);

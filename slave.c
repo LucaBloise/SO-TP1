@@ -50,7 +50,7 @@ void printMD5(char path[]){
         dup(pipefd[PIPE_WRITE_END]);
         close(pipefd[PIPE_WRITE_END]);
         char * argv[] = {"md5sum", path, NULL};
-        execv("/usr/bin/md5sum", argv);
+        execv(MD5SUM_PATH, argv);
         PERROR_EXIT("Execv")
     } else{
         close(pipefd[PIPE_WRITE_END]);

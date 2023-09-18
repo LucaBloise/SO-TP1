@@ -4,7 +4,7 @@
 
 int main(){
     if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
-        PERROR_EXIT("Setvbuf");
+        PERROR_EXIT("Setvbuf")
     }
 
     char buffer[PIPE_CAP+1];
@@ -12,22 +12,14 @@ int main(){
     char path[MAX_PATH_LENGTH];
     while((readCount = read(0, buffer, PIPE_CAP)) > 0){
         buffer[readCount]=0;
-
         int j=0;
-        for(int i = 0; buffer[i] && j<MAX_PATH_LENGTH; i++){
+        for(int i = 0; buffer[i] && j<MAX_PATH_LENGTH;i++){
             if (buffer[i]=='\n'){
                 path[j]=0;
                 printMD5(path);
                 j=0;
-            } else {
-                if (buffer[i] == ' ') {
-                    path[j++] = '\\';
-                    if (j==MAX_PATH_LENGTH){
-                        break;
-                    }
-                }
-
-                path[j++] = buffer[i];
+            } else{
+                path[j++]=buffer[i];
             }
         }
         if(j==MAX_PATH_LENGTH){
@@ -37,27 +29,42 @@ int main(){
 
     }
     if (readCount == -1){
-        PERROR_EXIT("Read");
+        PERROR_EXIT("Read")
     }
 
     return 0;
 }
 
-void printMD5(const char path[]){
-    char md5[MD5_LENGTH+1];
-    char command[strlen(CMD_NAME) + MAX_PATH_LENGTH + 1];
-    sprintf(command ,"md5sum %s" ,path);
-    FILE * md5Pipe = popen(command, "r");
-    if (md5Pipe==NULL){
-        PERROR_EXIT("Pipe");
+void printMD5(char path[]){
+    int pipefd[2];
+    if (pipe(pipefd)==-1){
+        PERROR_EXIT("Pipe")
     }
-    fgets(md5, MD5_LENGTH+1, md5Pipe);
-    pclose(md5Pipe);
-    int pid = getpid();
-    while (digits(pid) > MAX_PID_LENGTH){
-        pid /= 10;
+    int pid = fork();
+    if (pid ==-1){
+        PERROR_EXIT("Fork")
     }
-    printf("PID: %d PATH: %s MD5: %s\n",pid, path, md5);
+    if (pid==0){
+        close(pipefd[PIPE_READ_END]);
+        close(STDOUT_FILENO);
+        dup(pipefd[PIPE_WRITE_END]);
+        close(pipefd[PIPE_WRITE_END]);
+        char * argv[] = {"md5sum", path, NULL};
+        execv("/usr/bin/md5sum", argv);
+        PERROR_EXIT("Execv")
+    } else{
+        close(pipefd[PIPE_WRITE_END]);
+        wait(NULL);
+        int myPid = getpid();
+        while (digits(myPid) > MAX_PID_LENGTH){
+            myPid /= 10;
+        }
+        char md5[MD5_LENGTH+1];
+        read(pipefd[PIPE_READ_END],md5, MD5_LENGTH);
+        close(pipefd[PIPE_READ_END]);
+        md5[MD5_LENGTH]=0;
+        printf("PID: %d PATH: %s MD5: %s\n",pid, path, md5);
+    }
 }
 
 int digits(int n){

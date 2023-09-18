@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     }
 
     if (setvbuf(stdout, NULL, _IONBF, 0)!=0){
-        PERROR_EXIT("Setvbuf");
+        PERROR_EXIT("Setvbuf")
     }
 
     FILE * results = fopen("results.txt", "w");
@@ -35,12 +35,12 @@ void startSlaves(slaveInfo slavesInfo[], int slaveCount){
     for(int i = 0; i<slaveCount; i++){
         slavesInfo[i].pendingFileCount=0;
         if (pipe(slavesInfo[i].hearPipe)==-1 || pipe(slavesInfo[i].talkPipe)==-1){
-            PERROR_EXIT("Pipe");
+            PERROR_EXIT("Pipe")
         }
 
         int pid = fork();
         if (pid<0){
-            PERROR_EXIT("Fork");
+            PERROR_EXIT("Fork")
         }
         if (pid==0){
 
@@ -56,7 +56,7 @@ void startSlaves(slaveInfo slavesInfo[], int slaveCount){
             close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
 
             execv("slave", argv);
-            PERROR_EXIT("Execve");
+            PERROR_EXIT("Execve")
         } else {
             close(slavesInfo[i].talkPipe[PIPE_READ_END]);
             close(slavesInfo[i].hearPipe[PIPE_WRITE_END]);
@@ -72,7 +72,7 @@ void sendFile(slaveInfo * slave, char * paths[], int *pathOffset){
     }
     toWrite[len] = '\n';
     if ((write(slave->talkPipe[PIPE_WRITE_END], toWrite, len+1))==-1){
-        PERROR_EXIT("Write");
+        PERROR_EXIT("Write")
     }
     (*pathOffset)++;
     slave->pendingFileCount++;
@@ -107,7 +107,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
             }
         }
         if ((availableCount = select(highestFd + 1, &rfds, NULL, NULL, NULL)) == -1){
-            PERROR_EXIT("Select");
+            PERROR_EXIT("Select")
         }
         for(int i=0; availableCount>0; i++){
 
@@ -115,7 +115,7 @@ void slaveManager(slaveInfo slavesInfo[], int slaveCount, char * paths[], int fi
                 availableCount--;
                 memset(readBuffer, 0, SIZE_PER_FILE);
                 if (read(slavesInfo[i].hearPipe[PIPE_READ_END], readBuffer, SIZE_PER_FILE)==-1){
-                    PERROR_EXIT("read");
+                    PERROR_EXIT("read")
                 }
                 save(readBuffer, results, shm);
                 slavesInfo[i].pendingFileCount--;

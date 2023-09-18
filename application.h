@@ -5,7 +5,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <string.h>
 #include <sys/select.h>
 #include "commons.h"
@@ -13,8 +12,7 @@
 
 #define SLAVE_TO_FILE_RATIO 10
 #define INITIAL_FILES_PER_SLAVE_RATIO 3
-#define PIPE_WRITE_END 1
-#define PIPE_READ_END 0
+
 
 typedef struct{
     int talkPipe[2];

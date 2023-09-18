@@ -63,7 +63,7 @@ void printMD5(char path[]){
         read(pipefd[PIPE_READ_END],md5, MD5_LENGTH);
         close(pipefd[PIPE_READ_END]);
         md5[MD5_LENGTH]=0;
-        printf("PID: %d PATH: %s MD5: %s\n",pid, path, md5);
+        printf("PID: %d PATH: %s MD5: %s\n", myPid, path, md5);
     }
 }
 

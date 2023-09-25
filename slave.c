@@ -7,6 +7,8 @@ int main(){
         PERROR_EXIT("Setvbuf")
     }
 
+    int namedPipeFd = open(FIFO_NAME, O_WRONLY);
+
     char buffer[PIPE_CAP+1];
     int readCount;
     char path[MAX_PATH_LENGTH];
@@ -16,7 +18,7 @@ int main(){
         for(int i = 0; buffer[i] && j<MAX_PATH_LENGTH;i++){
             if (buffer[i]=='\n'){
                 path[j]=0;
-                printMD5(path);
+                printMD5(path, namedPipeFd);
                 j=0;
             } else{
                 path[j++]=buffer[i];
@@ -35,7 +37,7 @@ int main(){
     return 0;
 }
 
-void printMD5(char path[]){
+void printMD5(char path[], int fd){
     int pipefd[2];
     if (pipe(pipefd)==-1){
         PERROR_EXIT("Pipe")
@@ -64,6 +66,7 @@ void printMD5(char path[]){
         close(pipefd[PIPE_READ_END]);
         md5[MD5_LENGTH]=0;
         printf("PID: %d PATH: %s MD5: %s\n", myPid, path, md5);
+        write(fd, md5, MD5_LENGTH);
     }
 }
 

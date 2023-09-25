@@ -15,6 +15,8 @@ int main(int argc, char *argv[]){
         PERROR_EXIT("Setvbuf")
     }
 
+    mkfifo(FIFO_NAME, 0666);
+
     FILE * results = fopen("results.txt", "w");
     int fileCount = argc-1;
     printf("%d", fileCount);

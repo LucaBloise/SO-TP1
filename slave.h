@@ -13,7 +13,7 @@
 
 #define MD5SUM_PATH "/usr/bin/md5sum"
 
-void printMD5(char path[]);
+void printMD5(char path[], int fd);
 int digits(int n);
 
 #endif

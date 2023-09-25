@@ -24,7 +24,7 @@ vista: $(OBJ_VIEW)
 	$(CC) $(CFLAGS) -o $@ $^
 
 vista2: $(OBJ_VIEW2)
-	$(CC) $(CFLAGS) -0 $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

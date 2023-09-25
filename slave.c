@@ -30,6 +30,7 @@ int main(){
         }
 
     }
+    close(namedPipeFd);
     if (readCount == -1){
         PERROR_EXIT("Read")
     }

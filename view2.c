@@ -6,9 +6,9 @@
 
 int main(void){
     int fifo = open(FIFO_NAME, O_RDONLY);
-    char buf[SIZE_PER_FILE];
-    while (read(fifo, buf, SIZE_PER_FILE)>0){
-        write(STDOUT_FILENO, buf, SIZE_PER_FILE);
+    char buf[MD5_LENGTH];
+    while (read(fifo, buf, MD5_LENGTH)>0){
+        write(STDOUT_FILENO, buf, MD5_LENGTH);
     }
     close(fifo);
     return 0;

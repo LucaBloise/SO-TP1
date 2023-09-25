@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "commons.h"
 
 #define MD5SUM_PATH "/usr/bin/md5sum"
